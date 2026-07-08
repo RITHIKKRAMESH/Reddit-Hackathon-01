@@ -1,6 +1,6 @@
 {
   "$schema": "https://developers.reddit.com/schema/config-file.v1.json",
-  "name": "my-game-01",
+  "name": "laser-deflect-coop",
   "post": {
     "dir": "dist/client",
     "entrypoints": {
@@ -21,7 +21,7 @@
     "items": [
       {
         "label": "Create a new post",
-        "description": "my-game-01",
+        "description": "laser-deflect-coop",
         "location": "subreddit",
         "forUserType": "moderator",
         "endpoint": "/internal/menu/post-create"
@@ -44,8 +44,5 @@
   "scripts": {
     "dev": "vite build --watch",
     "build": "vite build"
-  },
-  "dev": {
-    "subreddit": "my_game_01_dev"
   }
 }
