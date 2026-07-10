@@ -7,7 +7,8 @@ export interface LaserSimResult {
 
 export function simulateLaser(
   level: LevelConfig,
-  placedMirrors: Record<string, MirrorType>
+  placedMirrors: Record<string, MirrorType>,
+  placedPrisms?: Record<string, boolean>
 ): LaserSimResult {
   // Find start cell
   const startCell = level.grid.find((c) => c.type === 'start');
@@ -64,10 +65,16 @@ export function simulateLaser(
 
     const cellKey = `${currX},${currY}`;
 
+    // Hit a placed Prism?
+    if (placedPrisms && placedPrisms[cellKey]) {
+      break;
+    }
+
     // Hit static obstacle?
     if (obstacles.has(cellKey)) {
       break;
     }
+
 
     // Hit target?
     const hitTarget = targetCells.find((t) => t.x === currX && t.y === currY);

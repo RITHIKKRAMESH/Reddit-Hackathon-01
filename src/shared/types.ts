@@ -16,6 +16,8 @@ export interface LevelConfig {
   height: number;
   grid: GridCell[]; // Static elements: starts, targets, obstacles
   muralText: string; // The text description or icon revealed by this level
+  difficulty: 'EZ' | 'BIT HARD' | 'HARD ASF';
+  reward: number;
 }
 
 export interface GameState {
@@ -27,10 +29,24 @@ export interface GameState {
   isSolved: boolean;
   laserPath: Array<{ x: number; y: number }>;
   targetsHit: boolean;
+  gameMode: 'solo' | 'community';
+  credits: number;
+  prismsInventory: number;
+  placedPrisms: Record<string, boolean>; // Keys are "x,y"
+  onlineCount: number;
+  queue: string[];
+  activePlacer: string | null;
+  refreshesRemaining: number;
+  refreshCooldownEnd: number | null;
+  activeStage: 'easy' | 'medium' | 'hard';
+  activeLevelNumber: number;
+  highestCompleted: Record<'easy' | 'medium' | 'hard', number>;
 }
 
 export interface PlayerMove {
   x: number;
   y: number;
   mirrorType: MirrorType | null; // null to clear/remove
+  placeType?: 'mirror' | 'prism';
 }
+

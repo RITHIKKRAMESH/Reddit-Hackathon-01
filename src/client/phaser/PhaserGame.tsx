@@ -6,15 +6,24 @@ import { LevelConfig, MirrorType } from '../../shared/types';
 interface PhaserGameProps {
   levelConfig: LevelConfig;
   placedMirrors: Record<string, MirrorType>;
+  placedPrisms: Record<string, boolean>;
   selectedMirrorType: MirrorType | null;
+  selectedTool: 'mirror' | 'prism' | 'erase';
   cooldownActive: boolean;
-  onMoveAttempt: (x: number, y: number, mirrorType: MirrorType | null) => void;
+  onMoveAttempt: (
+    x: number,
+    y: number,
+    mirrorType: MirrorType | null,
+    placeType?: 'mirror' | 'prism'
+  ) => void;
 }
 
 export const PhaserGame: React.FC<PhaserGameProps> = ({
   levelConfig,
   placedMirrors,
+  placedPrisms,
   selectedMirrorType,
+  selectedTool,
   cooldownActive,
   onMoveAttempt,
 }) => {
@@ -46,7 +55,9 @@ export const PhaserGame: React.FC<PhaserGameProps> = ({
     game.scene.start('GameScene', {
       levelConfig,
       placedMirrors,
+      placedPrisms,
       selectedMirrorType,
+      selectedTool,
       cooldownActive,
       onMoveAttempt,
     });
@@ -65,19 +76,26 @@ export const PhaserGame: React.FC<PhaserGameProps> = ({
         sceneRef.current = null;
       }
     };
-  }, [levelConfig.levelNumber]); // Recreate game instance if level config changes
+  }, [levelConfig.levelNumber, levelConfig.difficulty, levelConfig.width, levelConfig.height]); // Recreate game instance if level config changes
 
   // Update properties reactively inside the running scene
   useEffect(() => {
     if (sceneRef.current) {
-      sceneRef.current.updateState(placedMirrors, selectedMirrorType, cooldownActive);
+      sceneRef.current.updateState(
+        placedMirrors,
+        placedPrisms,
+        selectedMirrorType,
+        selectedTool,
+        cooldownActive
+      );
     }
-  }, [placedMirrors, selectedMirrorType, cooldownActive]);
+  }, [placedMirrors, placedPrisms, selectedMirrorType, selectedTool, cooldownActive]);
+
 
   return (
     <div
       ref={containerRef}
-      className="w-full h-full min-h-[400px] bg-slate-950 rounded-lg overflow-hidden border border-slate-800 shadow-inner"
+      className="w-full h-full min-h-0 bg-slate-950 rounded-lg overflow-hidden border border-slate-800 shadow-inner"
     />
   );
 };

@@ -5,17 +5,21 @@ import { simulateLaser } from '../../shared/laserSim';
 export interface GameSceneData {
   levelConfig: LevelConfig;
   placedMirrors: Record<string, MirrorType>;
+  placedPrisms: Record<string, boolean>;
   selectedMirrorType: MirrorType | null;
+  selectedTool: 'mirror' | 'prism' | 'erase';
   cooldownActive: boolean;
-  onMoveAttempt: (x: number, y: number, mirrorType: MirrorType | null) => void;
+  onMoveAttempt: (x: number, y: number, mirrorType: MirrorType | null, placeType?: 'mirror' | 'prism') => void;
 }
 
 export class GameScene extends Phaser.Scene {
   private levelConfig!: LevelConfig;
   private placedMirrors!: Record<string, MirrorType>;
+  private placedPrisms!: Record<string, boolean>;
   private selectedMirrorType: MirrorType | null = '/';
+  private selectedTool: 'mirror' | 'prism' | 'erase' = 'mirror';
   private cooldownActive = false;
-  private onMoveAttempt!: (x: number, y: number, mirrorType: MirrorType | null) => void;
+  private onMoveAttempt!: (x: number, y: number, mirrorType: MirrorType | null, placeType?: 'mirror' | 'prism') => void;
 
   // Render variables
   private gridOffset = { x: 50, y: 50 };
@@ -26,6 +30,7 @@ export class GameScene extends Phaser.Scene {
   // Game Objects
   private tileOverlays!: Phaser.GameObjects.Group;
   private mirrorObjects: Map<string, Phaser.GameObjects.Container> = new Map();
+  private prismObjects: Map<string, Phaser.GameObjects.Container> = new Map();
   private laserGraphics!: Phaser.GameObjects.Graphics;
   private laserParticles!: Phaser.GameObjects.Particles.ParticleEmitter;
   
@@ -40,17 +45,28 @@ export class GameScene extends Phaser.Scene {
   init(data: GameSceneData) {
     this.levelConfig = data.levelConfig;
     this.placedMirrors = { ...data.placedMirrors };
+    this.placedPrisms = { ...data.placedPrisms };
     this.selectedMirrorType = data.selectedMirrorType;
+    this.selectedTool = data.selectedTool || 'mirror';
     this.cooldownActive = data.cooldownActive;
     this.onMoveAttempt = data.onMoveAttempt;
   }
 
   // Reactive updates from React
-  updateState(placedMirrors: Record<string, MirrorType>, selectedMirror: MirrorType | null, cooldown: boolean) {
+  updateState(
+    placedMirrors: Record<string, MirrorType>,
+    placedPrisms: Record<string, boolean>,
+    selectedMirror: MirrorType | null,
+    selectedTool: 'mirror' | 'prism' | 'erase',
+    cooldown: boolean
+  ) {
     this.placedMirrors = { ...placedMirrors };
+    this.placedPrisms = { ...placedPrisms };
     this.selectedMirrorType = selectedMirror;
+    this.selectedTool = selectedTool;
     this.cooldownActive = cooldown;
     this.rebuildMirrors();
+    this.rebuildPrisms();
   }
 
   preload() {
@@ -125,11 +141,13 @@ export class GameScene extends Phaser.Scene {
   private rebuildGrid() {
     this.children.removeAll();
     this.mirrorObjects.clear();
+    this.prismObjects.clear();
     this.tileOverlays.clear(true, true);
 
     this.drawGridBackground();
     this.buildStaticEntities();
     this.rebuildMirrors();
+    this.rebuildPrisms();
     this.laserGraphics = this.add.graphics();
     this.createLaserParticles();
     this.setupInputs();
@@ -251,6 +269,58 @@ export class GameScene extends Phaser.Scene {
     });
   }
 
+  private rebuildPrisms() {
+    // Clear old prisms
+    this.prismObjects.forEach((container) => container.destroy());
+    this.prismObjects.clear();
+
+    // Create current prisms
+    Object.entries(this.placedPrisms).forEach(([key, placed]) => {
+      if (placed) {
+        const [x, y] = key.split(',').map(Number) as [number, number];
+        const container = this.createPrismContainer(x, y, false);
+        this.prismObjects.set(key, container);
+      }
+    });
+  }
+
+  private createPrismContainer(x: number, y: number, isPreview: boolean): Phaser.GameObjects.Container {
+    const px = this.gridOffset.x + x * this.cellSize + this.cellSize / 2;
+    const py = this.gridOffset.y + y * this.cellSize + this.cellSize / 2;
+    const container = this.add.container(px, py);
+
+    const size = this.cellSize * 0.7;
+    const graphics = this.add.graphics();
+    container.add(graphics);
+
+    const alpha = isPreview ? 0.4 : 0.85;
+    const color = 0x22d3ee; // Cyan for prisms
+
+    // Draw diamond shape
+    graphics.fillStyle(color, alpha * 0.3);
+    graphics.lineStyle(2.5, color, alpha);
+
+    graphics.beginPath();
+    graphics.moveTo(0, -size / 2);
+    graphics.lineTo(size / 2, 0);
+    graphics.lineTo(0, size / 2);
+    graphics.lineTo(-size / 2, 0);
+    graphics.closePath();
+    graphics.fillPath();
+    graphics.strokePath();
+
+    // Facet lines
+    graphics.lineStyle(1, 0xffffff, alpha * 0.5);
+    graphics.lineBetween(0, -size / 2, 0, size / 2);
+    graphics.lineBetween(-size / 2, 0, size / 2, 0);
+
+    // Inner core
+    graphics.fillStyle(0xffffff, alpha * 0.6);
+    graphics.fillCircle(0, 0, 3);
+
+    return container;
+  }
+
   private createMirrorContainer(x: number, y: number, mirrorType: MirrorType, isPreview: boolean): Phaser.GameObjects.Container {
     const px = this.gridOffset.x + x * this.cellSize + this.cellSize / 2;
     const py = this.gridOffset.y + y * this.cellSize + this.cellSize / 2;
@@ -346,25 +416,29 @@ export class GameScene extends Phaser.Scene {
             return;
           }
 
-          const currentMirror = this.placedMirrors[`${x},${y}`];
-          let nextMirror: MirrorType | null = null;
+          const cellKey = `${x},${y}`;
+          const currentMirror = this.placedMirrors[cellKey];
+          const hasPrism = this.placedPrisms[cellKey];
 
-          if (this.selectedMirrorType === null) {
-            // Eraser mode
-            nextMirror = null;
-          } else {
-            // Standard mirror placement:
-            // If empty, place selected type
-            // If already has that type, clear it
-            // If has opposite type, change to selected type
-            if (currentMirror === this.selectedMirrorType) {
-              nextMirror = null;
+          if (this.selectedTool === 'erase') {
+            if (hasPrism) {
+              this.onMoveAttempt(x, y, null, 'prism');
+            } else if (currentMirror) {
+              this.onMoveAttempt(x, y, null, 'mirror');
+            }
+          } else if (this.selectedTool === 'prism') {
+            if (hasPrism) {
+              this.onMoveAttempt(x, y, null, 'prism');
             } else {
-              nextMirror = this.selectedMirrorType;
+              this.onMoveAttempt(x, y, '/' as MirrorType, 'prism');
+            }
+          } else {
+            if (currentMirror === this.selectedMirrorType) {
+              this.onMoveAttempt(x, y, null, 'mirror');
+            } else {
+              this.onMoveAttempt(x, y, this.selectedMirrorType, 'mirror');
             }
           }
-
-          this.onMoveAttempt(x, y, nextMirror);
         });
 
         this.tileOverlays.add(zone);
@@ -376,7 +450,7 @@ export class GameScene extends Phaser.Scene {
     this.laserGraphics.clear();
 
     // 1. Calculate active laser path
-    const activeResult = simulateLaser(this.levelConfig, this.placedMirrors);
+    const activeResult = simulateLaser(this.levelConfig, this.placedMirrors, this.placedPrisms);
     
     // Draw real laser
     this.drawPath(activeResult.path, false, activeResult.targetsHit);
@@ -385,33 +459,54 @@ export class GameScene extends Phaser.Scene {
     const hover = this.hoverCell;
     if (hover && !this.cooldownActive) {
       const hKey = `${hover.x},${hover.y}`;
-      const hasCurrent = this.placedMirrors[hKey];
+      const hasCurrentMirror = this.placedMirrors[hKey];
+      const hasCurrentPrism = this.placedPrisms[hKey];
       
-      // Calculate preview grid
       const previewMirrors = { ...this.placedMirrors };
+      const previewPrisms = { ...this.placedPrisms };
       let showPreview = false;
 
-      if (this.selectedMirrorType === null) {
-        if (hasCurrent) {
+      if (this.selectedTool === 'erase') {
+        if (hasCurrentMirror) {
           delete previewMirrors[hKey];
+          showPreview = true;
+        } else if (hasCurrentPrism) {
+          delete previewPrisms[hKey];
+          showPreview = true;
+        }
+      } else if (this.selectedTool === 'prism') {
+        if (!hasCurrentPrism) {
+          if (hasCurrentMirror) {
+            delete previewMirrors[hKey];
+          }
+          previewPrisms[hKey] = true;
           showPreview = true;
         }
       } else {
-        if (hasCurrent !== this.selectedMirrorType) {
-          previewMirrors[hKey] = this.selectedMirrorType;
+        if (hasCurrentMirror !== this.selectedMirrorType) {
+          if (hasCurrentPrism) {
+            delete previewPrisms[hKey];
+          }
+          if (this.selectedMirrorType) {
+            previewMirrors[hKey] = this.selectedMirrorType;
+          } else {
+            delete previewMirrors[hKey];
+          }
           showPreview = true;
         }
       }
 
       if (showPreview) {
         // Draw ghost mirror in scene
-        const previewResult = simulateLaser(this.levelConfig, previewMirrors);
+        const previewResult = simulateLaser(this.levelConfig, previewMirrors, previewPrisms);
         this.drawPath(previewResult.path, true, previewResult.targetsHit);
 
-        // Draw temporary mirror indicator
-        if (this.selectedMirrorType) {
+        // Draw temporary preview indicator
+        if (this.selectedTool === 'prism' && !hasCurrentPrism) {
+          const tempContainer = this.createPrismContainer(hover.x, hover.y, true);
+          this.time.delayedCall(16, () => tempContainer.destroy());
+        } else if (this.selectedTool === 'mirror' && this.selectedMirrorType && hasCurrentMirror !== this.selectedMirrorType) {
           const tempContainer = this.createMirrorContainer(hover.x, hover.y, this.selectedMirrorType, true);
-          // Destroy it right after rendering so it doesn't pile up
           this.time.delayedCall(16, () => tempContainer.destroy());
         }
       }
