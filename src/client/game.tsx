@@ -1048,7 +1048,7 @@ export const App = () => {
         </div>
       ) : (
         <div className="flex flex-col lg:flex-row h-full overflow-y-auto lg:overflow-hidden">
-          <div className="flex-1 flex flex-col p-3 md:p-4 lg:p-6 justify-center items-center min-h-0 w-full shrink-0 h-auto lg:h-full">
+          <div className="w-full lg:flex-1 flex flex-col p-4 lg:p-6 justify-center items-center min-h-0 shrink-0 h-fit lg:h-full">
             <div className="w-full max-w-3xl flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-4">
               <div>
                 <h1 className="text-2xl md:text-3xl font-extrabold font-mono bg-gradient-to-r from-blue-400 via-pink-400 to-purple-500 bg-clip-text text-transparent tracking-wide">
@@ -1097,7 +1097,7 @@ export const App = () => {
               </div>
             </div>
 
-            <div className="w-full max-w-3xl h-[280px] sm:h-[320px] md:h-[380px] lg:flex-1 flex items-center justify-center relative">
+            <div className="w-full max-w-[450px] aspect-square bg-[#0b0e14] border border-slate-800/80 rounded-2xl relative shadow-2xl overflow-hidden">
               {isGameCompleted ? (
                 <div className="text-center p-8 bg-slate-900/60 border border-pink-500/30 rounded-2xl max-w-md w-full shadow-2xl backdrop-blur-sm">
                   <span className="text-7xl mb-4 block">👑</span>
