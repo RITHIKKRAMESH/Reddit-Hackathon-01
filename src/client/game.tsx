@@ -1097,7 +1097,7 @@ export const App = () => {
               </div>
             </div>
 
-            <div className="w-full max-w-3xl flex-1 flex items-center justify-center relative min-h-[240px] sm:min-h-[290px] md:min-h-[340px]">
+            <div className="w-full max-w-3xl flex-1 flex items-center justify-center relative min-h-[360px] md:min-h-[460px] lg:min-h-[500px]">
               {isGameCompleted ? (
                 <div className="text-center p-8 bg-slate-900/60 border border-pink-500/30 rounded-2xl max-w-md w-full shadow-2xl backdrop-blur-sm">
                   <span className="text-7xl mb-4 block">👑</span>
