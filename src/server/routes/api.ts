@@ -831,6 +831,23 @@ api.post('/select-level', async (c) => {
       ? `laser_deflect:${postId}:solo:${username}:level`
       : `laser_deflect:${postId}:level`;
 
+    // Clear board if selected level was already completed
+    const completedKey = isSolo
+      ? `laser_deflect:completed:${postId}:${username}:${stage}`
+      : `laser_deflect:completed:${postId}:${stage}`;
+    const completedStr = await redis.get(completedKey);
+    const highestCompleted = completedStr ? parseInt(completedStr, 10) : 0;
+    if (levelNumber <= highestCompleted) {
+      const gridKey = isSolo
+        ? `laser_deflect:${postId}:solo:${username}:grid:${stage}:${levelNumber}`
+        : `laser_deflect:${postId}:grid:${stage}:${levelNumber}`;
+      const prismsKey = isSolo
+        ? `laser_deflect:${postId}:solo:${username}:prisms:${stage}:${levelNumber}`
+        : `laser_deflect:${postId}:prisms:${stage}:${levelNumber}`;
+      await redis.del(gridKey);
+      await redis.del(prismsKey);
+    }
+
     await redis.set(stageKey, stage);
     await redis.set(levelKey, levelNumber.toString());
 
