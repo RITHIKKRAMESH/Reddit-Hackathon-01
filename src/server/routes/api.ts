@@ -126,7 +126,7 @@ async function getGameStateForPost(
   let queue: string[] = queueStr ? JSON.parse(queueStr) : [];
   
   const activePlayers5m = await redis.zRange(activePlayersKey, now - 300000, now, { by: 'score' });
-  const activeSet5m = new Set(activePlayers5m.map((m) => m.member));
+  const activeSet5m = new Set(activePlayers5m.map((m: any) => typeof m === 'string' ? m : m.member));
   queue = queue.filter((name) => activeSet5m.has(name) || name === username || name === 'anonymous');
   
   // Save filtered queue back if changed

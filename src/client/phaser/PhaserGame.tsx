@@ -31,6 +31,11 @@ export const PhaserGame: React.FC<PhaserGameProps> = ({
   const gameRef = useRef<Phaser.Game | null>(null);
   const sceneRef = useRef<GameScene | null>(null);
 
+  const onMoveAttemptRef = useRef(onMoveAttempt);
+  useEffect(() => {
+    onMoveAttemptRef.current = onMoveAttempt;
+  }, [onMoveAttempt]);
+
   // Initialize Phaser
   useEffect(() => {
     if (!containerRef.current) return;
@@ -63,7 +68,9 @@ export const PhaserGame: React.FC<PhaserGameProps> = ({
       selectedMirrorType,
       selectedTool,
       cooldownActive,
-      onMoveAttempt,
+      onMoveAttempt: (x: number, y: number, mirrorType: MirrorType | null, placeType?: 'mirror' | 'prism') => {
+        onMoveAttemptRef.current(x, y, mirrorType, placeType);
+      },
     });
 
     game.events.on('step', () => {
