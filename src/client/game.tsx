@@ -1047,8 +1047,8 @@ export const App = () => {
           </div>
         </div>
       ) : (
-        <div className="flex flex-col lg:flex-row h-full overflow-hidden">
-          <div className="flex-1 flex flex-col p-2.5 md:p-4 lg:p-6 justify-between items-center min-h-0 w-full overflow-hidden">
+        <div className="flex flex-col lg:flex-row h-full overflow-y-auto lg:overflow-hidden">
+          <div className="flex-1 flex flex-col p-2.5 md:p-4 lg:p-6 justify-between items-center min-h-0 w-full shrink-0">
             <div className="w-full max-w-3xl flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-4">
               <div>
                 <h1 className="text-2xl md:text-3xl font-extrabold font-mono bg-gradient-to-r from-blue-400 via-pink-400 to-purple-500 bg-clip-text text-transparent tracking-wide">
@@ -1242,7 +1242,7 @@ export const App = () => {
             </div>
           </div>
 
-          <div className="hidden lg:flex w-full lg:w-96 bg-[#0e121a] border-t lg:border-t-0 lg:border-l border-slate-800 p-4 flex flex-col gap-3.5 select-none shrink-0 overflow-y-auto h-full">
+          <div className="w-full lg:w-96 bg-[#0e121a] border-t lg:border-t-0 lg:border-l border-slate-800 p-4 flex flex-col gap-3.5 select-none shrink-0 overflow-y-auto h-auto lg:h-full">
             
             <div className="bg-slate-900/40 border border-slate-800 rounded-xl p-3 flex flex-col gap-3 shadow-md">
               <div className="flex justify-between items-center border-b border-slate-800/60 pb-1.5">
