@@ -45,6 +45,10 @@ export const PhaserGame: React.FC<PhaserGameProps> = ({
         mode: Phaser.Scale.RESIZE,
         autoCenter: Phaser.Scale.CENTER_BOTH,
       },
+      input: {
+        // @ts-ignore
+        preventDefault: false,
+      },
       scene: [GameScene],
     };
 
