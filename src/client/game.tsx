@@ -1048,7 +1048,7 @@ export const App = () => {
         </div>
       ) : (
         <div className="flex flex-col lg:flex-row h-full overflow-y-auto lg:overflow-hidden">
-          <div className="flex-1 flex flex-col p-2.5 md:p-4 lg:p-6 justify-between items-center min-h-0 w-full shrink-0 h-[430px] sm:h-[480px] md:h-[530px] lg:h-full">
+          <div className="flex-1 flex flex-col p-3 md:p-4 lg:p-6 justify-center items-center min-h-0 w-full shrink-0 h-auto lg:h-full">
             <div className="w-full max-w-3xl flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-4">
               <div>
                 <h1 className="text-2xl md:text-3xl font-extrabold font-mono bg-gradient-to-r from-blue-400 via-pink-400 to-purple-500 bg-clip-text text-transparent tracking-wide">
@@ -1097,7 +1097,7 @@ export const App = () => {
               </div>
             </div>
 
-            <div className="w-full max-w-3xl flex-1 flex items-center justify-center relative min-h-[360px] md:min-h-[460px] lg:min-h-[500px]">
+            <div className="w-full max-w-3xl h-[280px] sm:h-[320px] md:h-[380px] lg:flex-1 flex items-center justify-center relative">
               {isGameCompleted ? (
                 <div className="text-center p-8 bg-slate-900/60 border border-pink-500/30 rounded-2xl max-w-md w-full shadow-2xl backdrop-blur-sm">
                   <span className="text-7xl mb-4 block">👑</span>
@@ -1142,103 +1142,6 @@ export const App = () => {
                   )}
                 </div>
               )}
-            </div>
-
-            {/* Compact Mobile Controls - Visible only on mobile/narrow screens (below lg) */}
-            <div className="w-full max-w-3xl lg:hidden flex flex-col gap-2.5 mt-3 select-none border-t border-slate-800/60 pt-3">
-              <div className="flex items-center justify-between gap-2.5">
-                {/* Tool Selection Buttons */}
-                <div className="flex-1 grid grid-cols-3 gap-2">
-                  <button
-                    onClick={() => {
-                      setSelectedTool('mirror');
-                      setSelectedMirror('/');
-                    }}
-                    className={`flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg border font-mono text-xs font-bold cursor-pointer transition-all active:scale-95 ${
-                      selectedTool === 'mirror' && selectedMirror === '/'
-                        ? 'border-pink-500 bg-pink-500/10 text-pink-300 shadow-[0_0_8px_rgba(236,72,153,0.2)]'
-                        : 'border-slate-800 bg-slate-950 text-slate-400 hover:text-slate-200'
-                    }`}
-                  >
-                    <svg className="w-4 h-4" viewBox="0 0 32 32" fill="none">
-                      <line x1="8" y1="24" x2="24" y2="8" stroke="currentColor" strokeWidth="4" strokeLinecap="round" />
-                    </svg>
-                    <span>Mirror (/)</span>
-                  </button>
-
-                  <button
-                    onClick={() => {
-                      setSelectedTool('mirror');
-                      setSelectedMirror('\\');
-                    }}
-                    className={`flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg border font-mono text-xs font-bold cursor-pointer transition-all active:scale-95 ${
-                      selectedTool === 'mirror' && selectedMirror === '\\'
-                        ? 'border-pink-500 bg-pink-500/10 text-pink-300 shadow-[0_0_8px_rgba(236,72,153,0.2)]'
-                        : 'border-slate-800 bg-slate-950 text-slate-400 hover:text-slate-200'
-                    }`}
-                  >
-                    <svg className="w-4 h-4" viewBox="0 0 32 32" fill="none">
-                      <line x1="8" y1="8" x2="24" y2="24" stroke="currentColor" strokeWidth="4" strokeLinecap="round" />
-                    </svg>
-                    <span>Mirror (\\)</span>
-                  </button>
-
-                  <button
-                    onClick={() => {
-                      setSelectedTool('erase');
-                      setSelectedMirror(null);
-                    }}
-                    className={`flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg border font-mono text-xs font-bold cursor-pointer transition-all active:scale-95 ${
-                      selectedTool === 'erase'
-                        ? 'border-red-500 bg-red-500/10 text-red-300 shadow-[0_0_8px_rgba(239,68,68,0.2)]'
-                        : 'border-slate-800 bg-slate-950 text-slate-400 hover:text-slate-200'
-                    }`}
-                  >
-                    <svg className="w-4 h-4" viewBox="0 0 32 32" fill="none">
-                      <rect x="6" y="6" width="20" height="20" rx="3" stroke="currentColor" strokeWidth="3" />
-                      <line x1="6" y1="6" x2="26" y2="26" stroke="currentColor" strokeWidth="3" />
-                    </svg>
-                    <span>Erase</span>
-                  </button>
-                </div>
-
-                {/* Reset button */}
-                <button
-                  onClick={handleResetLevel}
-                  disabled={resetCooldownSeconds > 0 && gameState.refreshesRemaining === 0}
-                  className={`font-mono text-xs font-bold px-3 py-2 rounded-lg transition-all active:scale-95 cursor-pointer flex items-center gap-1.5 shadow-md ${
-                    resetCooldownSeconds > 0 && gameState.refreshesRemaining === 0
-                      ? 'border border-red-900/50 bg-red-955/20 text-red-500 cursor-not-allowed'
-                      : 'border border-red-500/40 bg-red-500/5 hover:bg-red-500/10 text-red-300 hover:border-red-500'
-                  }`}
-                >
-                  <span>🔄</span> Reset
-                </button>
-              </div>
-
-              {/* Status Info Row */}
-              <div className="flex items-center justify-between text-[11px] font-mono text-slate-400 bg-slate-950/60 border border-slate-800 px-3 py-2 rounded-lg gap-2">
-                <div className="flex items-center gap-1.5 truncate">
-                  <span>Balance:</span>
-                  <span className="text-amber-400 font-bold">🪙 {gameState.credits} LC</span>
-                </div>
-
-                {gameMode === 'community' && (
-                  <div className="flex items-center gap-2 truncate">
-                    {gameState.cooldownUntil && Date.now() < gameState.cooldownUntil ? (
-                      <span className="text-red-400 font-bold animate-pulse">
-                        ⏳ Cooldown: {((gameState.cooldownUntil - Date.now()) / 1000).toFixed(1)}s
-                      </span>
-                    ) : gameState.activePlacer ? (
-                      <span className="text-blue-400 font-bold truncate">
-                        👤 Active: {gameState.activePlacer}
-                      </span>
-                    ) : (
-                      <span className="text-emerald-400 font-bold">⚡ Charge Ready</span>
-                    )}
-                  </div>
-                )}
-              </div>
             </div>
           </div>
 
